@@ -4,17 +4,17 @@ import time
 def search_gallica():
     with sync_playwright() as p:
         # Launch browser
-        browser = p.chromium.launch(headless=True)  # Set True for headless mode
+        browser = p.chromium.launch(headless=False)  # Change to True for headless mode
         page = browser.new_page()
 
         # Open Gallica Search
-        print("🔍 Opening Gallica...")
+        print("Opening Gallica...")
         page.goto("https://rapportgallica.bnf.fr/recherche?query=(gallica+all+%22panafricain%22)&lang=en&suggest=0&aig=2&mb=5&collapsing=true")
         page.wait_for_load_state("networkidle")
 
         print("✅ Page loaded. Searching for scrollable container...")
 
-        # Find the correct scrollable container
+        # Locate the scrollable container
         scroll_container = page.locator("div.overflow-auto.h-full.z-2")
 
         if not scroll_container.count():
@@ -42,29 +42,22 @@ def search_gallica():
 
             # Check new height inside the container
             new_height = page.evaluate("(element) => element.scrollHeight", scroll_handle)
-            print(f"📏 Scrolled to: {new_height}px")
+            print(f"Scrolled to: {new_height}px")
 
             if new_height == previous_height:
-                print("✅ Reached bottom of results.")
                 break  # Stop scrolling if no new content loads
 
             previous_height = new_height
 
         print("✅ Scrolling complete.")
 
-        # Step 4: Locate "See extracts in search report" buttons
-        print("🔍 Looking for 'See extracts in search report' buttons...")
-        page.wait_for_selector("a.focus\\:outline-none", state="visible", timeout=5000)
+        # Click on search result buttons to open OCR text pages
+        print("✅ Clicking search results...")
         buttons = page.locator("a.focus\\:outline-none").all()
+        print(f"🛠 Found {len(buttons)} buttons.")
 
-        if len(buttons) == 0:
-            print("❌ No buttons found! Something might have changed.")
-        else:
-            print(f"✅ Found {len(buttons)} buttons.")
-
-        # Step 5: Click each button
         for index, button in enumerate(buttons):
-            print(f"Clicking button {index + 1} of {len(buttons)}...")
+            print(f"🔍 Clicking result {index + 1}...")
             button.scroll_into_view_if_needed()
             button.wait_for(state="visible", timeout=5000)
 
@@ -73,34 +66,42 @@ def search_gallica():
                 page.wait_for_timeout(500)
                 button.click(force=True)
 
-                new_page = popup_info.value  
+                new_page = popup_info.value
                 new_page.wait_for_load_state("networkidle")
-                print(f"✅ Opened Page {index + 1}: {new_page.title()}")
+
+                # Extract OCR Text from the page
+                extract_ocr_text(new_page)
 
                 new_page.close()
                 time.sleep(2)
 
-        print("✅ All buttons clicked and pages processed.")
-
-        # Step 6: Handle pagination
-        print("🔄 Checking for 'Next Search Page' button...")
-        page_count = 2
-        while page_count > 0:
-            next_button = page.locator("#nextResultPageButtom")
-
-            if next_button.is_visible():
-                print("➡️ Clicking 'Next Search Page'...")
-                next_button.hover()
-                page.wait_for_timeout(500)
-                next_button.click()
-                page.wait_for_load_state("networkidle")
-                page_count -= 1
-            else:
-                print("❌ No more pages found. Stopping...")
-                break
-
+        # Close browser
         browser.close()
-        print("✅ Search process completed.")
+
+def extract_ocr_text(page):
+    """Extracts OCR text: Paragraph with keyword, the one before, and the one after."""
+    page.wait_for_selector("div#mCSB_13_container", timeout=5000)
+    ocr_container = page.locator("div#mCSB_13_container")
+
+    if not ocr_container.count():
+        print("⚠️ OCR container not found.")
+        return
+
+    ocr_text = ocr_container.inner_text()
+    paragraphs = ocr_text.split("\n")
+
+    keyword = "panafricain"
+    for i, para in enumerate(paragraphs):
+        if keyword in para.lower():
+            before = paragraphs[i - 1] if i > 0 else "N/A"
+            after = paragraphs[i + 1] if i < len(paragraphs) - 1 else "N/A"
+
+            print("\n📜 **Extracted OCR Snippet:**")
+            print(f"🔹 **Title:** {page.title()}")
+            print(f"🔹 **Previous Paragraph:** {before}")
+            print(f"🔹 **Matching Paragraph:** {para}")
+            print(f"🔹 **Next Paragraph:** {after}")
+            break
 
 # Run the function
 search_gallica()
