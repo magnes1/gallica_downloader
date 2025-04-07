@@ -202,7 +202,8 @@ def process_page(page, results):
         try:
             # Ensure the button is stable before scrolling (if needed)
             for _ in range(3):  # Retry checking for stability
-                if button.is_visible() and button.is_enabled():
+                # if button.is_visible() and button.is_enabled():
+                if button.is_visible():
                     break
             print("⏳ Button is not stable yet, retrying...")
             time.sleep(1)
@@ -297,22 +298,32 @@ def search_gallica(gotourl):
 # search_gallica(gotourl ="https://rapportgallica.bnf.fr/recherche?query=(dc.type+all+%22manuscrit%22+or+dc.type+all+%22monographie%22+or+dc.type+all+%22fascicule%22)+and+(gallicapublication_date%3E=%221953%22+and+gallicapublication_date%3C=%221955%22)+and+(ocr.quality+all+%22Texte+disponible%22)+and+(subgallica+all+%22bandung%22)&aig=2&mb=5&collapsing=true&lang=en")
 
 
-SEARCH_TERM = "bandung"
-OUTPUT_FILE = "gallica_results_bandung_postbandung.json"
-print(f"Searching {SEARCH_TERM} ...")
-search_gallica(gotourl ="https://rapportgallica.bnf.fr/recherche?query=(dc.type+all+%22manuscrit%22+or+dc.type+all+%22monographie%22+or+dc.type+all+%22fascicule%22)+and+(gallicapublication_date%3E=%221956%22+and+gallicapublication_date%3C=%221965%22)+and+(ocr.quality+all+%22Texte+disponible%22)+and+(subgallica+all+%22bandung%22)&aig=2&mb=5&collapsing=true&lang=en")
+# SEARCH_TERM = "bandung"
+# OUTPUT_FILE = "gallica_results_bandung_postbandung.json"
+# print(f"Searching {SEARCH_TERM} ...")
+# search_gallica(gotourl ="https://rapportgallica.bnf.fr/recherche?query=(dc.type+all+%22manuscrit%22+or+dc.type+all+%22monographie%22+or+dc.type+all+%22fascicule%22)+and+(gallicapublication_date%3E=%221956%22+and+gallicapublication_date%3C=%221965%22)+and+(ocr.quality+all+%22Texte+disponible%22)+and+(subgallica+all+%22bandung%22)&aig=2&mb=5&collapsing=true&lang=en")
 
-SEARCH_TERM = "panafricain"
-OUTPUT_FILE = "gallica_results_panafricanisme_postbandung.json"
-print(f"Searching {SEARCH_TERM} ...")
-search_gallica(gotourl ="https://rapportgallica.bnf.fr/recherche?query=(dc.type+all+%22manuscrit%22+or+dc.type+all+%22monographie%22+or+dc.type+all+%22fascicule%22)+and+(gallicapublication_date%3E=%221956%22+and+gallicapublication_date%3C=%221965%22)+and+(ocr.quality+all+%22Texte+disponible%22)+and+(subgallica+all+%22panfricain%22)&filter=&aig=2&mb=5&collapsing=true&lang=en")
+# SEARCH_TERM = "panafricain"
+# OUTPUT_FILE = "gallica_results_panafricanisme_postbandung.json"
+# print(f"Searching {SEARCH_TERM} ...")
+# search_gallica(gotourl ="https://rapportgallica.bnf.fr/recherche?query=(dc.type+all+%22manuscrit%22+or+dc.type+all+%22monographie%22+or+dc.type+all+%22fascicule%22)+and+(gallicapublication_date%3E=%221956%22+and+gallicapublication_date%3C=%221965%22)+and+(ocr.quality+all+%22Texte+disponible%22)+and+(subgallica+all+%22panfricain%22)&filter=&aig=2&mb=5&collapsing=true&lang=en")
 
-SEARCH_TERM = "panafricain"
-OUTPUT_FILE = "gallica_results_panafricanisme_postbandung.json"
-print(f"Searching {SEARCH_TERM} ...")
-search_gallica(gotourl ="https://rapportgallica.bnf.fr/recherche?query=(dc.type+all+%22manuscrit%22+or+dc.type+all+%22monographie%22+or+dc.type+all+%22fascicule%22)+and+(gallicapublication_date%3E=%221956%22+and+gallicapublication_date%3C=%221965%22)+and+(ocr.quality+all+%22Texte+disponible%22)+and+(subgallica+all+%22panfrican%22)&filter=&aig=2&mb=5&collapsing=true&lang=en")
+# SEARCH_TERM = "panafricain"
+# OUTPUT_FILE = "gallica_results_panafricanisme_postbandung.json"
+# print(f"Searching {SEARCH_TERM} ...")
+# search_gallica(gotourl ="https://rapportgallica.bnf.fr/recherche?query=(dc.type+all+%22manuscrit%22+or+dc.type+all+%22monographie%22+or+dc.type+all+%22fascicule%22)+and+(gallicapublication_date%3E=%221956%22+and+gallicapublication_date%3C=%221965%22)+and+(ocr.quality+all+%22Texte+disponible%22)+and+(subgallica+all+%22panfrican%22)&filter=&aig=2&mb=5&collapsing=true&lang=en")
 
-SEARCH_TERM = "panafricanisme"
-OUTPUT_FILE = "gallica_results_panafricanisme_postbandung.json"
+# SEARCH_TERM = "panafricanisme"
+# OUTPUT_FILE = "gallica_results_panafricanisme_postbandung.json"
+# print(f"Searching {SEARCH_TERM} ...")
+# search_gallica(gotourl ="https://rapportgallica.bnf.fr/recherche?query=(dc.type+all+%22manuscrit%22+or+dc.type+all+%22monographie%22+or+dc.type+all+%22fascicule%22)+and+(gallicapublication_date%3E=%221956%22+and+gallicapublication_date%3C=%221965%22)+and+(ocr.quality+all+%22Texte+disponible%22)+and+(subgallica+all+%22panafricanisme%22)&filter=&aig=2&mb=5&collapsing=true&lang=en")
+
+SEARCH_TERM = "panafrican socialism"
+OUTPUT_FILE = "gallica_results_panafrican_socialism_prebandung.json"
 print(f"Searching {SEARCH_TERM} ...")
-search_gallica(gotourl ="https://rapportgallica.bnf.fr/recherche?query=(dc.type+all+%22manuscrit%22+or+dc.type+all+%22monographie%22+or+dc.type+all+%22fascicule%22)+and+(gallicapublication_date%3E=%221956%22+and+gallicapublication_date%3C=%221965%22)+and+(ocr.quality+all+%22Texte+disponible%22)+and+(subgallica+all+%22panafricanisme%22)&filter=&aig=2&mb=5&collapsing=true&lang=en")
+search_gallica(gotourl ="https://rapportgallica.bnf.fr/recherche?query=text+all+%22panafrican+socialism%22+and+(gallicapublication_date%3E=%221945%22+and+gallicapublication_date%3C=%221955%22)&suggest=10&keywords=panafrican+socialism&aig=2&mb=5&collapsing=true&lang=en")
+
+SEARCH_TERM = "panafrican socialism"
+OUTPUT_FILE = "gallica_results_panafrican_socialism_prebandung.json"
+print(f"Searching {SEARCH_TERM} ...")
+search_gallica(gotourl ="https://rapportgallica.bnf.fr/recherche?query=text+all+%22panafrican+socialism%22+and+(gallicapublication_date%3E=%221955%22+and+gallicapublication_date%3C=%221965%22)&suggest=10&keywords=panafrican+socialism&aig=2&mb=5&collapsing=true&lang=en")
