@@ -14,62 +14,57 @@ def extract_text_with_context(full_text, keyword, char_range=500):
     return full_text[start:end]
 
 def extract_ocr_text(page):
-    """Extracts OCR text snippet from the 'TEXT MODE (OCR)' tab."""
-    print("🟢 Checking for OCR Text Mode button...")
-    ocr_button = page.locator("button#acc_1-0_panel_4_trigger")
-    page.wait_for_load_state("networkidle")
+    """Extracts OCR text snippet from the 'TEXT MODE (OCR)' tab using fallback tabs if needed."""
+    print("🟢 Checking for OCR Text Mode tab...")
 
-    if ocr_button.count() == 0:
-        print("⚠️ OCR Text Mode button not found! Saving URL instead.")
-        return f"Failed to extract OCR text. URL: {page.url}"
-    
-    print("✅ Clicking OCR Text Mode button...")
-    try:
-        if not ocr_button.get_attribute("aria-expanded") or ocr_button.get_attribute("aria-expanded") == "false":
+    # List of possible OCR tab selectors
+    ocr_tab_selectors = [
+        "button#acc_1-0_panel_5_trigger",
+        "button#acc_1-0_panel_4_trigger",
+        "button:has-text('TEXT MODE (OCR)')",
+        "button:has-text('TEXT MODE')",
+        "button:has-text('MODE TEXTE')"
+    ]
+
+    # Try each selector until successful text extraction
+    for selector in ocr_tab_selectors:
+        print(f"🔍 Trying OCR tab selector: {selector}")
+        try:
+            ocr_button = page.locator(selector)
+            page.wait_for_load_state("networkidle")
+
+            if ocr_button.count() == 0:
+                print(f"⚠️ OCR tab not found for selector: {selector}")
+                continue
+
+            print("✅ Clicking OCR tab...")
+            if not ocr_button.get_attribute("aria-expanded") or ocr_button.get_attribute("aria-expanded") == "false":
                 ocr_button.click()
-                time.sleep(3)  # Allow time for text to load
+                time.sleep(3)  # Wait for panel to expand
 
-        # ✅ Wait for OCR container to appear
-        print("🔍 Waiting for OCR text container to appear...")
-        page.wait_for_selector("//div[@id='textImageModeDiv']", state="attached", timeout=8000)
+            # Wait for text container to load
+            print("🔍 Waiting for OCR text container to appear...")
+            page.wait_for_selector("#textImageModeDiv .mCSB_container", state="attached", timeout=8000)
+            ocr_div = page.locator("#textImageModeDiv .mCSB_container").first
 
-        parent_container = page.locator("//div[@id='textImageModeDiv']")
-        ocr_container = parent_container.locator(".mCustomScrollBox")
+            # Extract text
+            ocr_text = ocr_div.inner_text().replace("\n", " ").strip()
 
-        if ocr_container.count() == 0:
-            print("⚠️ OCR container not found. Saving URL instead.")
-            return f"Failed to extract OCR text. URL: {page.url}"
+            if not ocr_text:
+                print(f"⚠️ No OCR text found using selector: {selector}")
+                continue  # Try next selector
 
-        print("✅ OCR container found. Hovering and scrolling inside it...")
-        ocr_container.hover()
-        time.sleep(3)
+            print("✅ OCR text successfully extracted.")
+            snippet = extract_text_with_context(ocr_text, SEARCH_TERM)
+            return snippet if snippet else ocr_text[:1000]  # Return fallback preview if no keyword
 
-        # ✅ Ensure scrolling works
-        ocr_handle = ocr_container.element_handle()
-        if not ocr_handle:
-            print("⚠️ Could not retrieve OCR container handle. Saving URL instead.")
-            return f"Failed to extract OCR text. URL: {page.url}"
+        except Exception as e:
+            print(f"❌ Error extracting OCR text with selector {selector}: {e}")
+            continue
 
-        previous_height = 0
-        while True:
-            page.evaluate("(element) => element.scrollBy(0, 500)", ocr_handle)
-            time.sleep(3)
-            new_height = page.evaluate("(element) => element.scrollHeight", ocr_handle)
-            if new_height == previous_height:
-                break
-            previous_height = new_height
-
-        page.wait_for_load_state("networkidle")
-        print("✅ Finished scrolling OCR container.")
-        ocr_text = ocr_container.inner_text().replace("\n", " ").strip()
-
-        # ✅ Extract relevant snippet
-        snippet = extract_text_with_context(ocr_text, SEARCH_TERM)
-        return snippet if snippet else "Not found"
-    
-    except Exception as e:
-        print(f"❌ Error extracting OCR text: {e}. Saving URL instead.")
-        return f"Failed to extract OCR text. URL: {page.url}"    
+    # If no OCR tab worked
+    print("❌ No OCR content found from any tab. Saving URL instead.")
+    return f"Failed to extract OCR text. URL: {page.url}"
 
 def extract_metadata_from_about(page):
     """Extracts metadata from the ABOUT section, with a maximum of 3 retries if necessary."""
@@ -165,6 +160,8 @@ def extract_metadata_from_about(page):
 
     print("❌ Failed to extract complete metadata after 3 attempts.")
     return None
+
+
 
 def process_page(page, results):
     """Extracts data from all articles on a single page."""
@@ -318,12 +315,12 @@ def search_gallica(gotourl):
 # print(f"Searching {SEARCH_TERM} ...")
 # search_gallica(gotourl ="https://rapportgallica.bnf.fr/recherche?query=(dc.type+all+%22manuscrit%22+or+dc.type+all+%22monographie%22+or+dc.type+all+%22fascicule%22)+and+(gallicapublication_date%3E=%221956%22+and+gallicapublication_date%3C=%221965%22)+and+(ocr.quality+all+%22Texte+disponible%22)+and+(subgallica+all+%22panafricanisme%22)&filter=&aig=2&mb=5&collapsing=true&lang=en")
 
-SEARCH_TERM = "panafrican socialism"
-OUTPUT_FILE = "gallica_results_panafrican_socialism_prebandung.json"
-print(f"Searching {SEARCH_TERM} ...")
-search_gallica(gotourl ="https://rapportgallica.bnf.fr/recherche?query=text+all+%22panafrican+socialism%22+and+(gallicapublication_date%3E=%221945%22+and+gallicapublication_date%3C=%221955%22)&suggest=10&keywords=panafrican+socialism&aig=2&mb=5&collapsing=true&lang=en")
+# SEARCH_TERM = "panafrican socialism"
+# OUTPUT_FILE = "gallica_results_panafrican_socialism_prebandung.json"
+# print(f"Searching {SEARCH_TERM} ...")
+# search_gallica(gotourl ="https://rapportgallica.bnf.fr/recherche?query=text+all+%22panafrican+socialism%22+and+(gallicapublication_date%3E=%221945%22+and+gallicapublication_date%3C=%221955%22)&suggest=10&keywords=panafrican+socialism&aig=2&mb=5&collapsing=true&lang=en")
 
 SEARCH_TERM = "panafrican socialism"
-OUTPUT_FILE = "gallica_results_panafrican_socialism_prebandung.json"
+OUTPUT_FILE = "gallica_results_panafrican_socialism_postbandung.json"
 print(f"Searching {SEARCH_TERM} ...")
 search_gallica(gotourl ="https://rapportgallica.bnf.fr/recherche?query=text+all+%22panafrican+socialism%22+and+(gallicapublication_date%3E=%221955%22+and+gallicapublication_date%3C=%221965%22)&suggest=10&keywords=panafrican+socialism&aig=2&mb=5&collapsing=true&lang=en")
